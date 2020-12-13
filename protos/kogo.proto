@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package kogo;
+
+service Activity {
+    rpc GetBooks (BooksRequest) returns (stream Books) {}
+}
+
+message BooksRequest {
+    bool showOnlyRead = 1;
+}
+
+message Books {
+    string Title = 1;
+    string Author = 2;
+    float HoursRead = 3;
+}
