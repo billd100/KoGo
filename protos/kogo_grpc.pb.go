@@ -44,7 +44,7 @@ func (c *activityClient) GetBooks(ctx context.Context, in *BooksRequest, opts ..
 }
 
 type Activity_GetBooksClient interface {
-	Recv() (*Books, error)
+	Recv() (*Book, error)
 	grpc.ClientStream
 }
 
@@ -52,8 +52,8 @@ type activityGetBooksClient struct {
 	grpc.ClientStream
 }
 
-func (x *activityGetBooksClient) Recv() (*Books, error) {
-	m := new(Books)
+func (x *activityGetBooksClient) Recv() (*Book, error) {
+	m := new(Book)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func _Activity_GetBooks_Handler(srv interface{}, stream grpc.ServerStream) error
 }
 
 type Activity_GetBooksServer interface {
-	Send(*Books) error
+	Send(*Book) error
 	grpc.ServerStream
 }
 
@@ -105,7 +105,7 @@ type activityGetBooksServer struct {
 	grpc.ServerStream
 }
 
-func (x *activityGetBooksServer) Send(m *Books) error {
+func (x *activityGetBooksServer) Send(m *Book) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -123,5 +123,5 @@ var Activity_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "protos/kogo.proto",
+	Metadata: "kogo.proto",
 }
