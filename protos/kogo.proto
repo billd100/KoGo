@@ -4,10 +4,36 @@ package kogo;
 
 service Activity {
     rpc GetBooks (BooksRequest) returns (stream Book) {}
+    rpc GetBookCount (BookCountRequest) returns (BookCountResponse) {}
+    rpc BackupDatabase (BackupDatabaseRequest) returns (BackupDatabaseResponse) {}
+    rpc OfflineSetup (OfflineSetupRequest) returns (OfflineSetupResponse) {}
 }
 
 message BooksRequest {
     bool showOnlyRead = 1;
+}
+
+message BookCountRequest {}
+
+message BookCountResponse {
+    int32 count = 1;
+}
+
+message BackupDatabaseRequest {
+    string path = 1;
+}
+
+message BackupDatabaseResponse {
+    bool success = 1;
+}
+
+message OfflineSetupRequest {
+    bool overwriteExistingUser = 1;
+}
+
+message OfflineSetupResponse {
+    bool success = 1;
+    bool existingUserPresent = 2;
 }
 
 message Book {

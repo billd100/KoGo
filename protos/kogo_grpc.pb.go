@@ -18,6 +18,9 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ActivityClient interface {
 	GetBooks(ctx context.Context, in *BooksRequest, opts ...grpc.CallOption) (Activity_GetBooksClient, error)
+	GetBookCount(ctx context.Context, in *BookCountRequest, opts ...grpc.CallOption) (*BookCountResponse, error)
+	BackupDatabase(ctx context.Context, in *BackupDatabaseRequest, opts ...grpc.CallOption) (*BackupDatabaseResponse, error)
+	OfflineSetup(ctx context.Context, in *OfflineSetupRequest, opts ...grpc.CallOption) (*OfflineSetupResponse, error)
 }
 
 type activityClient struct {
@@ -60,11 +63,41 @@ func (x *activityGetBooksClient) Recv() (*Book, error) {
 	return m, nil
 }
 
+func (c *activityClient) GetBookCount(ctx context.Context, in *BookCountRequest, opts ...grpc.CallOption) (*BookCountResponse, error) {
+	out := new(BookCountResponse)
+	err := c.cc.Invoke(ctx, "/kogo.Activity/GetBookCount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *activityClient) BackupDatabase(ctx context.Context, in *BackupDatabaseRequest, opts ...grpc.CallOption) (*BackupDatabaseResponse, error) {
+	out := new(BackupDatabaseResponse)
+	err := c.cc.Invoke(ctx, "/kogo.Activity/BackupDatabase", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *activityClient) OfflineSetup(ctx context.Context, in *OfflineSetupRequest, opts ...grpc.CallOption) (*OfflineSetupResponse, error) {
+	out := new(OfflineSetupResponse)
+	err := c.cc.Invoke(ctx, "/kogo.Activity/OfflineSetup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ActivityServer is the server API for Activity service.
 // All implementations must embed UnimplementedActivityServer
 // for forward compatibility
 type ActivityServer interface {
 	GetBooks(*BooksRequest, Activity_GetBooksServer) error
+	GetBookCount(context.Context, *BookCountRequest) (*BookCountResponse, error)
+	BackupDatabase(context.Context, *BackupDatabaseRequest) (*BackupDatabaseResponse, error)
+	OfflineSetup(context.Context, *OfflineSetupRequest) (*OfflineSetupResponse, error)
 	mustEmbedUnimplementedActivityServer()
 }
 
@@ -74,6 +107,15 @@ type UnimplementedActivityServer struct {
 
 func (UnimplementedActivityServer) GetBooks(*BooksRequest, Activity_GetBooksServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetBooks not implemented")
+}
+func (UnimplementedActivityServer) GetBookCount(context.Context, *BookCountRequest) (*BookCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBookCount not implemented")
+}
+func (UnimplementedActivityServer) BackupDatabase(context.Context, *BackupDatabaseRequest) (*BackupDatabaseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BackupDatabase not implemented")
+}
+func (UnimplementedActivityServer) OfflineSetup(context.Context, *OfflineSetupRequest) (*OfflineSetupResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OfflineSetup not implemented")
 }
 func (UnimplementedActivityServer) mustEmbedUnimplementedActivityServer() {}
 
@@ -109,13 +151,80 @@ func (x *activityGetBooksServer) Send(m *Book) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Activity_GetBookCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BookCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ActivityServer).GetBookCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kogo.Activity/GetBookCount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ActivityServer).GetBookCount(ctx, req.(*BookCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Activity_BackupDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BackupDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ActivityServer).BackupDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kogo.Activity/BackupDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ActivityServer).BackupDatabase(ctx, req.(*BackupDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Activity_OfflineSetup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OfflineSetupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ActivityServer).OfflineSetup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kogo.Activity/OfflineSetup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ActivityServer).OfflineSetup(ctx, req.(*OfflineSetupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Activity_ServiceDesc is the grpc.ServiceDesc for Activity service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Activity_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "kogo.Activity",
 	HandlerType: (*ActivityServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetBookCount",
+			Handler:    _Activity_GetBookCount_Handler,
+		},
+		{
+			MethodName: "BackupDatabase",
+			Handler:    _Activity_BackupDatabase_Handler,
+		},
+		{
+			MethodName: "OfflineSetup",
+			Handler:    _Activity_OfflineSetup_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "GetBooks",
