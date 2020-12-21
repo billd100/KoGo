@@ -21,6 +21,7 @@ type ActivityClient interface {
 	GetBookCount(ctx context.Context, in *BookCountRequest, opts ...grpc.CallOption) (*BookCountResponse, error)
 	BackupDatabase(ctx context.Context, in *BackupDatabaseRequest, opts ...grpc.CallOption) (*BackupDatabaseResponse, error)
 	OfflineSetup(ctx context.Context, in *OfflineSetupRequest, opts ...grpc.CallOption) (*OfflineSetupResponse, error)
+	GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (Activity_GetUsersClient, error)
 }
 
 type activityClient struct {
@@ -90,6 +91,38 @@ func (c *activityClient) OfflineSetup(ctx context.Context, in *OfflineSetupReque
 	return out, nil
 }
 
+func (c *activityClient) GetUsers(ctx context.Context, in *GetUsersRequest, opts ...grpc.CallOption) (Activity_GetUsersClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Activity_ServiceDesc.Streams[1], "/kogo.Activity/GetUsers", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &activityGetUsersClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Activity_GetUsersClient interface {
+	Recv() (*User, error)
+	grpc.ClientStream
+}
+
+type activityGetUsersClient struct {
+	grpc.ClientStream
+}
+
+func (x *activityGetUsersClient) Recv() (*User, error) {
+	m := new(User)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ActivityServer is the server API for Activity service.
 // All implementations must embed UnimplementedActivityServer
 // for forward compatibility
@@ -98,6 +131,7 @@ type ActivityServer interface {
 	GetBookCount(context.Context, *BookCountRequest) (*BookCountResponse, error)
 	BackupDatabase(context.Context, *BackupDatabaseRequest) (*BackupDatabaseResponse, error)
 	OfflineSetup(context.Context, *OfflineSetupRequest) (*OfflineSetupResponse, error)
+	GetUsers(*GetUsersRequest, Activity_GetUsersServer) error
 	mustEmbedUnimplementedActivityServer()
 }
 
@@ -116,6 +150,9 @@ func (UnimplementedActivityServer) BackupDatabase(context.Context, *BackupDataba
 }
 func (UnimplementedActivityServer) OfflineSetup(context.Context, *OfflineSetupRequest) (*OfflineSetupResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OfflineSetup not implemented")
+}
+func (UnimplementedActivityServer) GetUsers(*GetUsersRequest, Activity_GetUsersServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetUsers not implemented")
 }
 func (UnimplementedActivityServer) mustEmbedUnimplementedActivityServer() {}
 
@@ -205,6 +242,27 @@ func _Activity_OfflineSetup_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Activity_GetUsers_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetUsersRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(ActivityServer).GetUsers(m, &activityGetUsersServer{stream})
+}
+
+type Activity_GetUsersServer interface {
+	Send(*User) error
+	grpc.ServerStream
+}
+
+type activityGetUsersServer struct {
+	grpc.ServerStream
+}
+
+func (x *activityGetUsersServer) Send(m *User) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Activity_ServiceDesc is the grpc.ServiceDesc for Activity service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -229,6 +287,11 @@ var Activity_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "GetBooks",
 			Handler:       _Activity_GetBooks_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetUsers",
+			Handler:       _Activity_GetUsers_Handler,
 			ServerStreams: true,
 		},
 	},

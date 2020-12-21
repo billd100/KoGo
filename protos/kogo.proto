@@ -7,6 +7,8 @@ service Activity {
     rpc GetBookCount (BookCountRequest) returns (BookCountResponse) {}
     rpc BackupDatabase (BackupDatabaseRequest) returns (BackupDatabaseResponse) {}
     rpc OfflineSetup (OfflineSetupRequest) returns (OfflineSetupResponse) {}
+    rpc GetUsers (GetUsersRequest) returns (stream User) {}
+    rpc GetDatabaseVersion (GetDatabaseVersionRequest) returns (DatabaseVersionResponse)
 }
 
 message BooksRequest {
@@ -16,29 +18,45 @@ message BooksRequest {
 message BookCountRequest {}
 
 message BookCountResponse {
-    int32 count = 1;
+    int32 Count = 1;
 }
 
 message BackupDatabaseRequest {
-    string path = 1;
+    string Path = 1;
 }
 
 message BackupDatabaseResponse {
-    bool success = 1;
+    bool Success = 1;
 }
 
 message OfflineSetupRequest {
-    bool overwriteExistingUser = 1;
+    bool OverwriteExistingUser = 1;
 }
 
 message OfflineSetupResponse {
-    bool success = 1;
-    bool existingUserPresent = 2;
+    bool Success = 1;
+    bool ExistingUserPresent = 2;
+}
+
+message GetUsersRequest {}
+
+message GetDatabaseVersionRequest {}
+
+message DatabaseVersionResponse {
+    string version = 1;
 }
 
 message Book {
     string Title = 1;
     string Author = 2;
-    float HoursRead = 3;
+    int32 TimeSpentReading = 3;
     int32 PercentRead = 4;
+}
+
+message User {
+    string Id = 1;
+    string DisplayName = 2;
+    string Email = 3;
+    string DeviceId = 4;
+    bool HasMadePurchase = 5;
 }

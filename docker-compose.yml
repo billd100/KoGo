@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  api:
+    build: ./api
+    hostname: api
+    ports:
+      - "8000:8000"
+    links:
+      - kobo
+    networks:
+      - kogo
+
+  kobo:
+    build: ./kobo
+    hostname: kobo
+    ports:
+      - "10000:10000"
+    volumes:
+      - /Volumes/KOBOeReader/.kobo/KoboReader.sqlite:/mnt/KoboReader.sqlite
+    networks:
+      - kogo
+  
+  ui:
+    build: ./ui
+    hostname: ui
+    ports:
+      - "3001:3000"
+    links:
+      - api
+    networks:
+      - kogo
+
+networks:
+  kogo:
